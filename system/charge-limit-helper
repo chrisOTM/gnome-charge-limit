@@ -1,0 +1,33 @@
+#!/bin/bash
+# Set battery charge thresholds. Runs as root via pkexec.
+# Usage: charge-limit-helper START END   (0 <= START < END <= 100)
+set -eu
+
+start=${1:-}
+end=${2:-}
+if ! [[ $start =~ ^[0-9]+$ && $end =~ ^[0-9]+$ ]] || ((end < 1 || end > 100 || start >= end)); then
+    echo "invalid thresholds: start=$start end=$end" >&2
+    exit 2
+fi
+
+bat=
+for b in /sys/class/power_supply/BAT*; do
+    if [[ -e $b/charge_control_end_threshold && -e $b/charge_control_start_threshold ]]; then
+        bat=$b
+        break
+    fi
+done
+if [[ -z $bat ]]; then
+    echo "no battery with charge thresholds found" >&2
+    exit 3
+fi
+
+# The driver rejects start >= end, so write in an order that keeps start < end.
+cur_end=$(<"$bat/charge_control_end_threshold")
+if ((end >= cur_end)); then
+    echo "$end" >"$bat/charge_control_end_threshold"
+    echo "$start" >"$bat/charge_control_start_threshold"
+else
+    echo "$start" >"$bat/charge_control_start_threshold"
+    echo "$end" >"$bat/charge_control_end_threshold"
+fi

@@ -1,0 +1,7 @@
+{
+  "uuid": "charge-limit@chrisotm.github.io",
+  "name": "Charge Limit",
+  "description": "Set the battery charge thresholds from Quick Settings (via pkexec helper).",
+  "shell-version": ["48", "49", "50"],
+  "url": "https://github.com/chrisOTM"
+}
