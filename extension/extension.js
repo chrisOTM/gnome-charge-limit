@@ -84,7 +84,9 @@ class ChargeLimitToggle extends QuickMenuToggle {
     }
 
     _apply(end) {
-        const start = end === 100 ? 0 : Math.max(0, end - START_GAP);
+        // "Off" uses start 99, not 0: ThinkPad firmware silently ignores start=0 and
+        // keeps the old start threshold, which would block charging above it.
+        const start = end === 100 ? 99 : Math.max(0, end - START_GAP);
         try {
             const proc = Gio.Subprocess.new(['pkexec', HELPER, `${start}`, `${end}`],
                 Gio.SubprocessFlags.STDERR_PIPE);
